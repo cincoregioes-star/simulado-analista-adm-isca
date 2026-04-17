@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1d3a" />
+  <title>SIMULADO MAX - Analista Adm | Versão Demo</title>
+
+  <style>
+    :root {
+      --max-dark: #0b1d3a;
+      --max-panel: #15325c;
+      --max-accent: #d4af37;
+      --max-text: #ffffff;
+      --max-gray: #b0c4de;
+      --max-correct: #00e676;
+      --max-wrong: #ff1744;
+      --max-overlay: rgba(0, 0, 0, 0.72);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    html, body {
+      background: var(--max-dark);
+      color: var(--max-text);
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 20px;
+    }
+
+    header {
+      width: 100%;
+      text-align: center;
+      padding: 25px 15px 15px;
+      border-bottom: 4px solid var(--max-accent);
+      background: #051024;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+      z-index: 10;
+    }
+
+    .logo-text {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-style: italic;
+    }
+
+    .logo-text span {
+      color: var(--max-accent);
+    }
+
+    header p.sub-title {
+      font-size: 0.95rem;
+      color: var(--max-accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .badge-premium {
+      background: #15325c;
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: inline-block;
+      border: 1px solid var(--max-accent);
+    }
+
+    .badge-premium span {
+      color: var(--max-text);
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      padding: 20px 15px;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .screen.active {
+      display: flex;
+      animation: fadeIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #screen-start {
+      margin-top: 10px;
+    }
+
+    #screen-start h3 {
+      margin-bottom: 15px;
+      color: var(--max-text);
+      font-size: 1.05rem;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #2a4b7c;
+      background: var(--max-panel);
+      color: var(--max-text);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.25s;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--max-accent);
+      color: var(--max-accent);
+      background: #1c3f73;
+    }
+
+    .btn:disabled {
+      opacity: 0.8;
+      cursor: not-allowed;
+    }
+
+    .btn.correct {
+      background: var(--max-correct) !important;
+      color: #000 !important;
+      border-color: var(--max-correct) !important;
+      box-shadow: 0 0 15px rgba(0,230,118,.35) !important;
+    }
+
+    .btn.wrong {
+      background: var(--max-wrong) !important;
+      color: #fff !important;
+      border-color: var(--max-wrong) !important;
+      box-shadow: 0 0 15px rgba(255,23,68,.35) !important;
+    }
+
+    .btn.locked {
+      border-color: #6e7f99;
+      background: linear-gradient(135deg, #10274a, #15325c);
+      position: relative;
+    }
+
+    .btn.locked:hover {
+      border-color: var(--max-accent);
+      color: var(--max-accent);
+    }
+
+    #question-text {
+      font-size: 1.1rem;
+      text-align: justify;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: var(--max-panel);
+      border-radius: 8px;
+      width: 100%;
+      line-height: 1.45;
+      border-left: 4px solid var(--max-accent);
+      color: var(--max-text);
+      font-weight: 600;
+    }
+
+    .status-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      color: var(--max-gray);
+      font-weight: bold;
+      text-transform: uppercase;
+      border-bottom: 2px solid #2a4b7c;
+      padding-bottom: 8px;
+      gap: 10px;
+    }
+
+    #options-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #comment-box {
+      display: none;
+      width: 100%;
+      padding: 15px;
+      margin-top: 15px;
+      background: #051024;
+      border-left: 5px solid var(--max-accent);
+      border-radius: 4px;
+      text-align: justify;
+      animation: fadeIn 0.3s ease;
+    }
+
+    #comment-box h4 {
+      color: var(--max-accent);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #comment-box p {
+      font-size: 0.9rem;
+      color: #e6e6e6;
+      line-height: 1.45;
+    }
+
+    .btn-acao {
+      background: var(--max-accent);
+      color: #000;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin-top: 20px;
+      width: 100%;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: 0.25s;
+      display: none;
+      font-size: 1rem;
+    }
+
+    .btn-acao:hover {
+      background: #f2c94c;
+      box-shadow: 0 0 15px rgba(212,175,55,.35);
+    }
+
+    .btn-voltar {
+      background: transparent;
+      border: 2px solid #b0c4de;
+      color: var(--max-gray);
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-weight: bold;
+      transition: 0.25s;
+    }
+
+    .btn-voltar:hover {
+      background: #2a4b7c;
+      color: #fff;
+      border-color: #fff;
+    }
+
+    .option-btn {
+      justify-content: flex-start;
+      text-align: left;
+      line-height: 1.35;
+      padding: 12px 15px;
+      font-size: 0.92rem;
+      text-transform: none;
+      font-weight: 500;
+    }
+
+    .result-card {
+      width: 100%;
+      background: var(--max-panel);
+      border: 1px solid rgba(212,175,55,.25);
+      border-radius: 12px;
+      padding: 24px 18px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+
+    .result-card h2 {
+      font-size: 1.8rem;
+      color: var(--max-text);
+      margin-bottom: 10px;
+    }
+
+    .result-score {
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--max-accent);
+      margin-bottom: 6px;
+    }
+
+    .result-desc {
+      color: var(--max-gray);
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .upsell-box {
+      width: 100%;
+      margin-top: 20px;
+      background: #051024;
+      border: 1px solid rgba(212,175,55,.4);
+      border-left: 5px solid var(--max-accent);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: left;
+    }
+
+    .upsell-box h3 {
+      color: var(--max-accent);
+      margin-bottom: 8px;
+      font-size: 1rem;
+      text-transform: uppercase;
+    }
+
+    .upsell-box p {
+      color: #e6e6e6;
+      line-height: 1.45;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    .upsell-link {
+      display: inline-block;
+      text-decoration: none;
+      background: var(--max-accent);
+      color: #000;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .upsell-link:hover {
+      background: #f2c94c;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--max-overlay);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 520px;
+      background: linear-gradient(180deg, #15325c 0%, #0d2342 100%);
+      border: 2px solid var(--max-accent);
+      border-radius: 14px;
+      padding: 26px 20px 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.45);
+      text-align: center;
+    }
+
+    .modal-box h2 {
+      color: var(--max-accent);
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .modal-box p {
+      color: #e9eef7;
+      line-height: 1.5;
+      margin-bottom: 14px;
+      font-size: 0.98rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-modal {
+      display: block;
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border: 2px solid transparent;
+      transition: .2s;
+    }
+
+    .btn-modal.primary {
+      background: var(--max-accent);
+      color: #000;
+    }
+
+    .btn-modal.primary:hover {
+      background: #f2c94c;
+    }
+
+    .btn-modal.secondary {
+      background: transparent;
+      color: #fff;
+      border-color: #88a0c9;
+      cursor: pointer;
+    }
+
+    .btn-modal.secondary:hover {
+      background: #23456f;
+      border-color: #fff;
+    }
+
+    .mini-note {
+      margin-top: 10px;
+      color: #b8c8e6;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 15px 8px 10px;
+      }
+
+      .logo-text {
+        font-size: 1.7rem;
+        margin-bottom: 5px;
+      }
+
+      header p.sub-title {
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+      }
+
+      .badge-premium span {
+        font-size: 0.72rem;
+      }
+
+      .screen {
+        padding: 10px;
+      }
+
+      #question-text {
+        padding: 12px;
+        font-size: 0.96rem;
+        margin-bottom: 12px;
+      }
+
+      .status-bar {
+        font-size: 0.82rem;
+      }
+
+      .btn {
+        padding: 12px 10px;
+        font-size: 0.84rem;
+      }
+
+      .option-btn {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+      }
+
+      .btn-acao,
+      .btn-voltar,
+      .btn-modal {
+        font-size: 0.9rem;
+      }
+
+      .result-score {
+        font-size: 3.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <div class="logo-text">SIMULADO <span>MAX</span></div>
+    <p class="sub-title">Analista Adm - Câmara de Beberibe | Versão Demo</p>
+    <div class="badge-premium">
+      <span>2 módulos liberados | desbloqueie a versão completa com 240 questões</span>
+    </div>
+  </header>
+
+  <div id="screen-start" class="screen active">
+    <h3>Escolha um módulo para começar:</h3>
+
+    <div class="menu-grid">
+      <button class="btn" onclick="iniciarQuiz('Módulo 1: Português')">
+        <span>1. Língua Portuguesa — Demo 10 questões</span>
+        <span>▶</span>
+      </button>
+
+      <button class="btn" onclick="iniciarQuiz('Módulo 2: Direito')">
+        <span>2. Direito Constitucional e Administrativo — Demo 10 questões</span>
+        <span>▶</span>
+      </button>
+
+      <button class="btn locked" onclick="abrirPremium('Módulo 3: Administração Pública e Gestão')">
+        <span>3. Administração Pública e Gestão — Desbloquear</span>
+        <span>🔒</span>
+      </button>
+
+      <button class="btn locked" onclick="abrirPremium('Módulo 4: Administração Financeira e Orçamentária')">
+        <span>4. Administração Financeira e Orçamentária — Desbloquear</span>
+        <span>🔒</span>
+      </button>
+
+      <button class="btn locked" onclick="abrirPremium('Módulo 5: Legislação Municipal')">
+        <span>5. Legislação Municipal — Desbloquear</span>
+        <span>🔒</span>
+      </button>
+
+      <button class="btn locked" onclick="abrirPremium('Módulo 6: Lógica e Informática')">
+        <span>6. Lógica e Informática — Desbloquear</span>
+        <span>🔒</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="screen-quiz" class="screen">
+    <div class="status-bar">
+      <span id="materia-titulo">Módulo</span>
+      <span id="contador-questao">1/10</span>
+    </div>
+
+    <div id="question-text">Carregando pergunta...</div>
+
+    <div id="options-container"></div>
+
+    <div id="comment-box">
+      <h4>Comentário do Professor:</h4>
+      <p id="comment-text"></p>
+    </div>
+
+    <button id="btn-next" class="btn-acao" onclick="proximaQuestao()">Próxima Questão ➔</button>
+    <button class="btn-voltar" onclick="voltarInicio()">🔙 Encerrar Simulado</button>
+  </div>
+
+  <div id="screen-result" class="screen">
+    <div class="result-card">
+      <h2>Módulo concluído</h2>
+      <div id="score-display" class="result-score">0/10</div>
+      <p class="result-desc">Desempenho na versão demo</p>
+
+      <div class="upsell-box">
+        <h3>Desbloqueie agora a versão completa</h3>
+        <p>
+          Continue seus estudos com acesso aos 6 módulos completos, 240 questões comentadas,
+          interface integral do simulado e treino mais profundo para a prova.
+        </p>
+        <a id="premium-link-result" class="upsell-link" href="https://pay.kiwify.com.br/AMEiNRc" target="_blank" rel="noopener noreferrer">
+          Quero liberar as 240 questões
+        </a>
+      </div>
+
+      <button class="btn-voltar" onclick="voltarInicio()">🔙 Voltar ao menu</button>
+    </div>
+  </div>
+</div>
+
+<div id="premiumModal" class="modal-overlay">
+  <div class="modal-box">
+    <h2>Módulo premium</h2>
+    <p id="premiumModalText">
+      Este módulo faz parte da versão completa do simulado.
+    </p>
+    <p>
+      Libere agora os 6 módulos completos com 240 questões comentadas e estude de forma mais forte para a prova.
+    </p>
+
+    <div class="modal-actions">
+      <a id="premium-link-modal" class="btn-modal primary" href="https://pay.kiwify.com.br/AMEiNRc" target="_blank" rel="noopener noreferrer">
+        Desbloquear versão completa
+      </a>
+      <button class="btn-modal secondary" onclick="fecharPremium()">Continuar na versão demo</button>
+    </div>
+
+    <div class="mini-note">
+      A demo libera 2 módulos com 10 questões cada para você testar antes de avançar.
+    </div>
+  </div>
+</div>
+
+<audio id="audio-bg" loop src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=tension-103701.mp3"></audio>
+<audio id="audio-correct" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=success-1-6297.mp3"></audio>
+<audio id="audio-wrong" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_c6ccf3232f.mp3?filename=error-126627.mp3"></audio>
+
+<script>
+  const PREMIUM_URL = "https://pay.kiwify.com.br/AMEiNRc";
+
+  const bancoLocal = {
+    "Módulo 1: Português": [
+      {
+        q: "Assinale a alternativa em que o uso da crase está correto:",
+        o: ["Vou a escola todos os dias.", "Entreguei o documento a diretora.", "Fui à reunião ontem.", "Cheguei a tarde cedo.", "Retornei a secretaria pela manhã."],
+        c: 2,
+        comentario: "Há crase em 'à reunião' porque ocorre a fusão da preposição 'a' com o artigo feminino 'a'."
+      },
+      {
+        q: "O verbo concorda corretamente em:",
+        o: ["Fazem dois anos que trabalho aqui.", "Houveram problemas na sessão.", "Existem documentos arquivados.", "Deve haverem soluções.", "Haviam poucos interessados."],
+        c: 2,
+        comentario: "O verbo 'existir' concorda normalmente com o sujeito plural: 'documentos'."
+      },
+      {
+        q: "Assinale a alternativa com erro de ortografia:",
+        o: ["Exceção", "Privilégio", "Análise", "Benefício", "Paralização"],
+        c: 4,
+        comentario: "O correto é 'paralisação', com s."
+      },
+      {
+        q: "O sujeito da frase 'Choveu ontem' é:",
+        o: ["Simples", "Oculto", "Inexistente", "Composto", "Indeterminado"],
+        c: 2,
+        comentario: "Verbos que indicam fenômenos da natureza, em sentido próprio, formam oração sem sujeito."
+      },
+      {
+        q: "Assinale a alternativa correta quanto à regência:",
+        o: ["Assisti o filme.", "Assisti ao filme.", "Assisti no filme.", "Assisti sobre o filme.", "Assisti para o filme."],
+        c: 1,
+        comentario: "O verbo assistir, no sentido de ver, exige a preposição 'a'."
+      },
+      {
+        q: "Há erro de concordância em:",
+        o: ["Os alunos chegaram cedo.", "As provas estavam difíceis.", "Haviam muitos candidatos.", "Os documentos foram entregues.", "Os servidores retornaram."],
+        c: 2,
+        comentario: "O verbo 'haver', com sentido de existir, é impessoal e deve permanecer no singular: 'Havia muitos candidatos'."
+      },
+      {
+        q: "A palavra 'câmara' é acentuada por ser:",
+        o: ["Oxítona", "Paroxítona", "Proparoxítona", "Monossílabo tônico", "Hiato"],
+        c: 2,
+        comentario: "Toda proparoxítona é acentuada, sem exceção."
+      },
+      {
+        q: "Assinale a frase com pontuação correta:",
+        o: ["O analista, fez o relatório.", "O analista fez o relatório.", "O analista fez, o relatório.", "O analista, fez, o relatório.", "O, analista fez o relatório."],
+        c: 1,
+        comentario: "Não se separa sujeito do verbo por vírgula."
+      },
+      {
+        q: "O plural de cidadão é:",
+        o: ["Cidadões", "Cidadãos", "Cidadães", "Cidadonis", "Cidadãeses"],
+        c: 1,
+        comentario: "A forma correta no plural é 'cidadãos'."
+      },
+      {
+        q: "Assinale a alternativa em que o uso de 'porquê' está correto:",
+        o: ["Não sei o porque disso.", "Explique o porquê disso.", "Porquê você fez isso?", "Ele saiu por que estava cansado.", "O motivo porquê faltou é desconhecido."],
+        c: 1,
+        comentario: "'Porquê' é substantivo e geralmente vem acompanhado de artigo, como em 'o porquê'."
+      }
+    ],
+
+    "Módulo 2: Direito": [
+      {
+        q: "Segundo o art. 37 da Constituição Federal, a Administração Pública direta e indireta obedecerá aos princípios de legalidade, impessoalidade, moralidade, publicidade e:",
+        o: ["Efetividade", "Eficiência", "Transparência", "Supremacia", "Proporcionalidade"],
+        c: 1,
+        comentario: "O conjunto clássico de princípios expressos no caput do art. 37 é conhecido pelo mnemônico LIMPE, sendo a eficiência um deles."
+      },
+      {
+        q: "O remédio constitucional destinado a proteger direito líquido e certo, não amparado por habeas corpus nem habeas data, é o:",
+        o: ["Mandado de segurança", "Mandado de injunção", "Habeas data", "Habeas corpus", "Ação popular"],
+        c: 0,
+        comentario: "O mandado de segurança é cabível quando há violação ou ameaça a direito líquido e certo por autoridade pública ou agente no exercício de atribuições do poder público."
+      },
+      {
+        q: "É livre a manifestação do pensamento, sendo:",
+        o: ["Admitido o anonimato em hipóteses administrativas", "Vedado o anonimato", "Permitido o anonimato em redes sociais", "Autorizado o anonimato mediante cadastro prévio", "Exigido anonimato em denúncias formais"],
+        c: 1,
+        comentario: "A Constituição Federal assegura a livre manifestação do pensamento, mas veda expressamente o anonimato."
+      },
+      {
+        q: "Compete aos Municípios legislar sobre:",
+        o: ["Direito penal", "Direito civil", "Assuntos de interesse local", "Direito eleitoral", "Direito comercial"],
+        c: 2,
+        comentario: "A Constituição atribui aos Municípios competência para legislar sobre assuntos de interesse local e suplementar a legislação federal e estadual no que couber."
+      },
+      {
+        q: "O prazo de validade do concurso público será de até:",
+        o: ["1 ano, sem prorrogação", "2 anos, prorrogável uma vez por igual período", "3 anos, sem prorrogação", "4 anos, prorrogável livremente", "5 anos, prorrogável uma vez"],
+        c: 1,
+        comentario: "A regra constitucional estabelece validade de até 2 anos, admitida uma única prorrogação por igual período."
+      },
+      {
+        q: "O servidor nomeado para cargo de provimento efetivo adquire estabilidade após:",
+        o: ["1 ano de exercício", "2 anos de exercício", "3 anos de efetivo exercício", "4 anos de estágio", "5 anos de serviço público"],
+        c: 2,
+        comentario: "A estabilidade do servidor efetivo, segundo a Constituição, ocorre após 3 anos de efetivo exercício."
+      },
+      {
+        q: "Sobre a acumulação remunerada de cargos públicos, assinale a alternativa permitida pela Constituição, havendo compatibilidade de horários:",
+        o: ["Dois cargos de analista administrativo", "Um cargo de professor com outro técnico ou científico", "Dois cargos de fiscal administrativo", "Um cargo de engenheiro com outro de procurador", "Dois cargos comissionados"],
+        c: 1,
+        comentario: "A Constituição admite, entre outras hipóteses, a acumulação de um cargo de professor com outro técnico ou científico, desde que haja compatibilidade de horários."
+      },
+      {
+        q: "A responsabilidade civil do Estado, em regra, é:",
+        o: ["Subjetiva, dependendo sempre de dolo", "Objetiva, baseada na teoria do risco administrativo", "Objetiva, baseada sempre no risco integral", "Subjetiva, dependendo sempre de culpa grave", "Inexistente diante de ato administrativo"],
+        c: 1,
+        comentario: "A responsabilidade civil estatal é objetiva quanto aos danos causados por seus agentes, bastando dano, conduta e nexo causal."
+      },
+      {
+        q: "Pelo princípio da autotutela, a Administração Pública pode:",
+        o: ["Somente revogar atos ilegais", "Somente anular atos inconvenientes", "Anular atos ilegais e revogar atos válidos por conveniência e oportunidade", "Modificar decisões judiciais transitadas em julgado", "Convalidar qualquer ato, inclusive com vício de finalidade"],
+        c: 2,
+        comentario: "A autotutela permite anular atos ilegais e revogar atos válidos que se tornaram inconvenientes ou inoportunos."
+      },
+      {
+        q: "São elementos do ato administrativo:",
+        o: ["Competência, finalidade, forma, motivo e objeto", "Legalidade, legitimidade, moralidade, motivação e mérito", "Hierarquia, disciplina, polícia, competência e forma", "Tipicidade, autoexecutoriedade, imperatividade, finalidade e motivo", "Objeto, publicidade, eficiência, motivo e conveniência"],
+        c: 0,
+        comentario: "Os cinco elementos clássicos do ato administrativo são competência, finalidade, forma, motivo e objeto."
+      }
+    ]
+  };
+
+  let moduloAtual = "";
+  let questoesAtual = [];
+  let indiceQuestao = 0;
+  let acertos = 0;
+
+  const screenStart = document.getElementById("screen-start");
+  const screenQuiz = document.getElementById("screen-quiz");
+  const screenResult = document.getElementById("screen-result");
+
+  const materiaTitulo = document.getElementById("materia-titulo");
+  const contadorQuestao = document.getElementById("contador-questao");
+  const questionText = document.getElementById("question-text");
+  const optionsContainer = document.getElementById("options-container");
+  const commentBox = document.getElementById("comment-box");
+  const commentText = document.getElementById("comment-text");
+  const btnNext = document.getElementById("btn-next");
+  const scoreDisplay = document.getElementById("score-display");
+
+  const premiumModal = document.getElementById("premiumModal");
+  const premiumModalText = document.getElementById("premiumModalText");
+  const premiumLinkModal = document.getElementById("premium-link-modal");
+  const premiumLinkResult = document.getElementById("premium-link-result");
+
+  const audioBg = document.getElementById("audio-bg");
+  const audioCorrect = document.getElementById("audio-correct");
+  const audioWrong = document.getElementById("audio-wrong");
+
+  premiumLinkModal.href = PREMIUM_URL;
+  premiumLinkResult.href = PREMIUM_URL;
+
+  function trocarTela(telaAtiva) {
+    screenStart.classList.remove("active");
+    screenQuiz.classList.remove("active");
+    screenResult.classList.remove("active");
+    telaAtiva.classList.add("active");
+  }
+
+  function iniciarQuiz(modulo) {
+    moduloAtual = modulo;
+    questoesAtual = bancoLocal[modulo];
+    indiceQuestao = 0;
+    acertos = 0;
+
+    materiaTitulo.textContent = moduloAtual;
+    trocarTela(screenQuiz);
+    mostrarQuestao();
+
+    if (audioBg) {
+      audioBg.volume = 0.15;
+      audioBg.play().catch(() => {});
+    }
+  }
+
+  function mostrarQuestao() {
+    const questao = questoesAtual[indiceQuestao];
+
+    contadorQuestao.textContent = `${indiceQuestao + 1}/${questoesAtual.length}`;
+    questionText.textContent = questao.q;
+    optionsContainer.innerHTML = "";
+    commentBox.style.display = "none";
+    btnNext.style.display = "none";
+
+    questao.o.forEach((opcao, index) => {
+      const botao = document.createElement("button");
+      botao.className = "btn option-btn";
+      botao.innerHTML = `<strong>${String.fromCharCode(65 + index)})</strong> ${opcao}`;
+      botao.onclick = () => responder(index);
+      optionsContainer.appendChild(botao);
+    });
+  }
+
+  function responder(indiceSelecionado) {
+    const questao = questoesAtual[indiceQuestao];
+    const botoes = optionsContainer.querySelectorAll("button");
+
+    botoes.forEach((btn, i) => {
+      btn.disabled = true;
+
+      if (i === questao.c) {
+        btn.classList.add("correct");
+      }
+
+      if (i === indiceSelecionado && i !== questao.c) {
+        btn.classList.add("wrong");
+      }
+    });
+
+    if (indiceSelecionado === questao.c) {
+      acertos++;
+      if (audioCorrect) {
+        audioCorrect.currentTime = 0;
+        audioCorrect.play().catch(() => {});
+      }
+    } else {
+      if (audioWrong) {
+        audioWrong.currentTime = 0;
+        audioWrong.play().catch(() => {});
+      }
+    }
+
+    commentText.textContent = questao.comentario;
+    commentBox.style.display = "block";
+    btnNext.style.display = "block";
+  }
+
+  function proximaQuestao() {
+    indiceQuestao++;
+
+    if (indiceQuestao < questoesAtual.length) {
+      mostrarQuestao();
+    } else {
+      finalizarModulo();
+    }
+  }
+
+  function finalizarModulo() {
+    scoreDisplay.textContent = `${acertos}/${questoesAtual.length}`;
+    premiumLinkResult.href = PREMIUM_URL;
+    trocarTela(screenResult);
+  }
+
+  function voltarInicio() {
+    if (audioBg) {
+      audioBg.pause();
+      audioBg.currentTime = 0;
+    }
+
+    moduloAtual = "";
+    questoesAtual = [];
+    indiceQuestao = 0;
+    acertos = 0;
+
+    trocarTela(screenStart);
+  }
+
+  function abrirPremium(nomeModulo) {
+    premiumModalText.textContent = `${nomeModulo} faz parte da versão completa do simulado.`;
+    premiumLinkModal.href = PREMIUM_URL;
+    premiumModal.classList.add("show");
+  }
+
+  function fecharPremium() {
+    premiumModal.classList.remove("show");
+  }
+
+  premiumModal.addEventListener("click", function(e) {
+    if (e.target === premiumModal) {
+      fecharPremium();
+    }
+  });
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      fecharPremium();
+    }
+  });
+</script>
+
+</body>
+</html>
