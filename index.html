@@ -7,7 +7,6 @@
   <title>SIMULADO MAX - Analista Adm | Versão Demo</title>
 
   <style>
-    
     :root {
       --max-dark: #0b1d3a;
       --max-panel: #15325c;
@@ -372,10 +371,29 @@
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: .5px;
+      animation: pulseBtn 1.4s infinite;
     }
 
     .upsell-link:hover {
       background: #f2c94c;
+    }
+
+    @keyframes pulseBtn {
+      0% { transform: scale(1); box-shadow: 0 0 0 rgba(212,175,55,0.0); }
+      50% { transform: scale(1.03); box-shadow: 0 0 18px rgba(212,175,55,0.35); }
+      100% { transform: scale(1); box-shadow: 0 0 0 rgba(212,175,55,0.0); }
+    }
+
+    .timer-box {
+      color: #fff;
+      margin-bottom: 12px;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+
+    .promo-alert {
+      color: #ffcc00 !important;
+      font-weight: bold;
     }
 
     .modal-overlay {
@@ -519,7 +537,41 @@
         font-size: 3.2rem;
       }
     }
-  </style>
+  
+.radar-copa-reward-box{
+  width:100%;
+  margin:18px 0 16px;
+  padding:16px;
+  border-radius:12px;
+  background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(0,230,118,.10));
+  border:1px solid rgba(212,175,55,.45);
+  text-align:left;
+}
+.radar-copa-reward-box h3{
+  color:var(--max-accent);
+  margin-bottom:8px;
+  font-size:1rem;
+  text-transform:uppercase;
+}
+.radar-copa-reward-box p{
+  color:#e6e6e6;
+  line-height:1.45;
+  font-size:.95rem;
+  margin-bottom:12px;
+}
+.radar-copa-reward-box a{
+  display:inline-block;
+  text-decoration:none;
+  background:var(--max-accent);
+  color:#000;
+  padding:12px 16px;
+  border-radius:8px;
+  font-weight:bold;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+</style>
 </head>
 <body>
 
@@ -593,14 +645,35 @@
       <div id="score-display" class="result-score">0/10</div>
       <p class="result-desc">Desempenho na versão demo</p>
 
+
+      <div class="radar-copa-reward-box" id="radarCopaRecompensa">
+        <h3>🎁 Recompensa Radar Copa</h3>
+        <p>
+          Ao concluir esta demo, você ganha figurinhas no álbum História em Campo 2026.
+          Finalizou = 1 figurinha; acertou metade ou mais = 3 figurinhas; gabaritou = 5 figurinhas.
+        </p>
+        <a href="https://dev-orient-social.github.io/radar-copa-2026-com-album/album/index.html" target="_blank" rel="noopener noreferrer">Abrir álbum e verificar</a>
+      </div>
+
       <div class="upsell-box">
         <h3>Desbloqueie agora a versão completa</h3>
+
         <p>
-          Continue seus estudos com acesso aos 6 módulos completos, 240 questões comentadas,
-          interface integral do simulado e treino mais profundo para a prova.
+          Você chegou até aqui — não faz sentido parar agora.
         </p>
+
+        <p>
+          Desbloqueie o acesso completo e treine como quem vai passar.
+        </p>
+
+        <div id="timer" class="timer-box">⏳ Oferta expira em: 10:00</div>
+
+        <p class="promo-alert">
+          ⚠️ Acesso com valor promocional por tempo limitado.
+        </p>
+
         <a id="premium-link-result" class="upsell-link" href="https://pay.kiwify.com.br/AMEiNRc" target="_blank" rel="noopener noreferrer">
-          Quero liberar as 240 questões
+          🔥 LIBERAR ACESSO COMPLETO AGORA
         </a>
       </div>
 
@@ -615,8 +688,20 @@
     <p id="premiumModalText">
       Este módulo faz parte da versão completa do simulado.
     </p>
+
     <p>
-      Libere agora os 6 módulos completos com 240 questões comentadas e estude de forma mais forte para a prova.
+      Esse módulo está bloqueado na versão gratuita.
+    </p>
+
+    <p>
+      A versão completa libera:<br>
+      ✔ 6 módulos completos<br>
+      ✔ 240 questões comentadas<br>
+      ✔ Treinamento nível prova
+    </p>
+
+    <p class="promo-alert">
+      Acesso imediato após pagamento.
     </p>
 
     <div class="modal-actions">
@@ -771,6 +856,8 @@
   let questoesAtual = [];
   let indiceQuestao = 0;
   let acertos = 0;
+  let tempo = 600;
+  let cronometro = null;
 
   const screenStart = document.getElementById("screen-start");
   const screenQuiz = document.getElementById("screen-quiz");
@@ -784,6 +871,7 @@
   const commentText = document.getElementById("comment-text");
   const btnNext = document.getElementById("btn-next");
   const scoreDisplay = document.getElementById("score-display");
+  const timerEl = document.getElementById("timer");
 
   const premiumModal = document.getElementById("premiumModal");
   const premiumModalText = document.getElementById("premiumModalText");
@@ -884,8 +972,21 @@
 
   function finalizarModulo() {
     scoreDisplay.textContent = `${acertos}/${questoesAtual.length}`;
+
+    // Radar Copa 2026: registra recompensa ao finalizar a demo
+    if(window.RadarCopaParceiro && typeof RadarCopaParceiro.registrarSimulado === "function"){
+      RadarCopaParceiro.registrarSimulado({
+        idSimulado: "gabarito-max-analista-adm-demo",
+        modulo: moduloAtual,
+        total: questoesAtual.length,
+        acertos: acertos,
+        finalizado: true
+      });
+    }
+
     premiumLinkResult.href = PREMIUM_URL;
     trocarTela(screenResult);
+    iniciarContador();
   }
 
   function voltarInicio() {
@@ -893,6 +994,8 @@
       audioBg.pause();
       audioBg.currentTime = 0;
     }
+
+    pararContador();
 
     moduloAtual = "";
     questoesAtual = [];
@@ -912,6 +1015,32 @@
     premiumModal.classList.remove("show");
   }
 
+  function iniciarContador() {
+    pararContador();
+    tempo = 600;
+    atualizarTimer();
+
+    cronometro = setInterval(() => {
+      if (tempo > 0) {
+        tempo--;
+        atualizarTimer();
+      }
+    }, 1000);
+  }
+
+  function pararContador() {
+    if (cronometro) {
+      clearInterval(cronometro);
+      cronometro = null;
+    }
+  }
+
+  function atualizarTimer() {
+    const min = Math.floor(tempo / 60);
+    const seg = tempo % 60;
+    timerEl.innerText = `⏳ Oferta expira em: ${min}:${seg < 10 ? "0" + seg : seg}`;
+  }
+
   premiumModal.addEventListener("click", function(e) {
     if (e.target === premiumModal) {
       fecharPremium();
@@ -925,5 +1054,6 @@
   });
 </script>
 
+  <script src="radar-copa-parceiro.js"></script>
 </body>
 </html>
